@@ -21,7 +21,7 @@ class VMParser:
         while not self.isEOF:
             s = self.f.readline()
             self.isEOF = (len(s) == 0)
-            self.cmd = re.sub('//.*', '', s).strip()
+            self.cmd = re.sub('//.*', '', s).strip().split()
             if self.cmd:
                 break
 

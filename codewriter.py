@@ -15,112 +15,131 @@ class CodeWriter:
             case 'add':
                 lines = [
                     '@SP\n',
-                    'A=A-1\n',
+                    'AM=M-1\n',
                     'D=M\n',
-                    'A=A-1\n',
+                    '@SP\n',
+                    'AM=M-1\n',
                     'M=D+M\n',
-                    'A=A+1\n'
+                    '@SP\n',
+                    'M=M+1\n'
                 ]
             case 'sub':
                 lines = [
                     '@SP\n',
-                    'A=A-1\n',
+                    'AM=M-1\n',
                     'D=M\n',
-                    'A=A-1\n',
+                    '@SP\n',
+                    'AM=M-1\n',
                     'M=M-D\n',
-                    'A=A+1\n'
+                    '@SP\n',
+                    'M=M+1\n'
                 ]
             case 'neg':
                 lines = [
                     '@SP\n',
-                    'A=A-1\n',
+                    'AM=M-1\n',
                     'M=-M\n',
-                    'A=A+1\n'
+                    '@SP\n',
+                    'M=M+1\n'
                 ]
             case 'eq':
                 lines = [
                     '@SP\n',
-                    'A=A-1\n',
+                    'AM=M-1\n',
                     'D=M\n',
-                    'A=A-1\n',
+                    '@SP\n'
+                    'AM=M-1\n',
                     'D=M-D\n',
                     '@_AUTO' + str(self.labelcnt) + '\n',
                     'D;JEQ\n',
-                    'D=1\n',
+                    'D=0\n',
                     '@_AUTO' + str(self.labelcnt + 1) + '\n',
                     '0;JMP\n',
                     '(_AUTO' + str(self.labelcnt) + ')\n',
-                    'D=0\n',
+                    'D=-1\n',
                     '(_AUTO' + str(self.labelcnt + 1) + ')\n',
                     '@SP\n',
+                    'A=M\n',
                     'M=D\n',
-                    'A=A+1\n'
+                    '@SP\n',
+                    'M=M+1\n'
                 ]
                 self.labelcnt += 2
             case 'gt':
                 lines = [
                     '@SP\n',
-                    'A=A-1\n',
+                    'AM=M-1\n',
                     'D=M\n',
-                    'A=A-1\n',
+                    '@SP\n'
+                    'AM=M-1\n',
                     'D=M-D\n',
                     '@_AUTO' + str(self.labelcnt) + '\n',
                     'D;JGT\n',
-                    'D=1\n',
+                    'D=0\n',
                     '@_AUTO' + str(self.labelcnt + 1) + '\n',
                     '0;JMP\n',
                     '(_AUTO' + str(self.labelcnt) + ')\n',
-                    'D=0\n',
+                    'D=-1\n',
                     '(_AUTO' + str(self.labelcnt + 1) + ')\n',
                     '@SP\n',
+                    'A=M\n',
                     'M=D\n',
-                    'A=A+1\n'
+                    '@SP\n',
+                    'M=M+1\n'
                 ]
                 self.labelcnt += 2
             case 'lt':
                 lines = [
                     '@SP\n',
-                    'A=A-1\n',
+                    'AM=M-1\n',
                     'D=M\n',
-                    'A=A-1\n',
+                    '@SP\n'
+                    'AM=M-1\n',
                     'D=M-D\n',
                     '@_AUTO' + str(self.labelcnt) + '\n',
                     'D;JLT\n',
-                    'D=1\n',
+                    'D=0\n',
                     '@_AUTO' + str(self.labelcnt + 1) + '\n',
                     '0;JMP\n',
                     '(_AUTO' + str(self.labelcnt) + ')\n',
-                    'D=0\n',
+                    'D=-1\n',
                     '(_AUTO' + str(self.labelcnt + 1) + ')\n',
                     '@SP\n',
+                    'A=M\n',
                     'M=D\n',
-                    'A=A+1\n'
+                    '@SP\n',
+                    'M=M+1\n'
                 ]
                 self.labelcnt += 2
             case 'and':
                 lines = [
                     '@SP\n',
-                    'A=A-1\n',
+                    'AM=M-1\n',
                     'D=M\n',
-                    'A=A-1\n',
+                    '@SP\n',
+                    'AM=M-1\n',
                     'M=D&M\n',
-                    'A=A+1\n'
+                    '@SP\n',
+                    'M=M+1\n'
                 ]
             case 'or':
                 lines = [
                     '@SP\n',
-                    'A=A-1\n',
+                    'AM=M-1\n',
                     'D=M\n',
-                    'A=A-1\n',
+                    '@SP\n',
+                    'AM=M-1\n',
                     'M=D|M\n',
-                    'A=A+1\n'
+                    '@SP\n',
+                    'M=M+1\n'
                 ]
             case 'not':
                 lines = [
                     '@SP\n',
-                    'A=A-1\n',
+                    'AM=M-1\n',
                     'M=!M\n',
-                    'A=A+1\n'
+                    '@SP\n',
+                    'M=M+1\n'
                 ]
         self.f.writelines(lines)
 
@@ -130,10 +149,12 @@ class CodeWriter:
             case vmcommandtype.C_PUSH:
                 lines = [
                     '@' + str(index) + '\n',
-                    'D=A',
-                    '@SP',
-                    'M=D',
-                    'A=A+1'
+                    'D=A\n',
+                    '@SP\n',
+                    'A=M\n',
+                    'M=D\n',
+                    '@SP\n',
+                    'M=M+1\n'
                 ]
             case vmcommandtype.C_POP:
                 pass
