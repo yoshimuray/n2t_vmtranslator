@@ -2,12 +2,24 @@ import io
 import vmcommandtype
 
 class CodeWriter:
+
+    _symbols = {
+        'local': 'LCL',
+        'argument': 'ARG',
+        'this': 'THIS',
+        'that': 'THAT'
+    }
+    _mapping = {
+        'pointer': 3,
+        'temp': 5
+    }
+
     def __init__(self, f: io.TextIOWrapper) -> None:
         self.f = f
         self.labelcnt = 0
 
-    # def setFileName(self, fileName: str) -> None:
-    #     pass
+    def setFileName(self, fileName: str) -> None:
+        self.finame = fileName
 
     def writeArithmetic(self, command: str) -> None:
         lines = []
@@ -147,17 +159,89 @@ class CodeWriter:
         lines = []
         match command:
             case vmcommandtype.C_PUSH:
-                lines = [
-                    '@' + str(index) + '\n',
-                    'D=A\n',
-                    '@SP\n',
-                    'A=M\n',
-                    'M=D\n',
-                    '@SP\n',
-                    'M=M+1\n'
-                ]
+                match segment:
+                    case 'constant':
+                        lines = [
+                            '@' + str(index) + '\n',
+                            'D=A\n',
+                            '@SP\n',
+                            'A=M\n',
+                            'M=D\n',
+                            '@SP\n',
+                            'M=M+1\n'
+                        ]
+                    case 'local' | 'argument' | 'this' | 'that':
+                        symbol = self._symbols[segment]
+                        lines = [
+                            '@' + symbol + '\n',
+                            'D=M\n',
+                            '@' + str(index) + '\n',
+                            'A=D+A\n',
+                            'D=M\n',
+                            '@SP\n',
+                            'A=M\n',
+                            'M=D\n',
+                            '@SP\n',
+                            'M=M+1\n'
+                        ]
+                    case 'pointer' | 'temp':
+                        addr = str(self._mapping[segment] + index)
+                        lines = [
+                            '@' + addr + '\n',
+                            'D=M\n',
+                            '@SP\n',
+                            'A=M\n',
+                            'M=D\n',
+                            '@SP\n',
+                            'M=M+1\n'
+                        ]
+                    case 'static':
+                        lines = [
+                            '@' + self.finame + '.' + str(index) + '\n',
+                            'D=M\n',
+                            '@SP\n',
+                            'A=M\n',
+                            'M=D\n',
+                            '@SP\n',
+                            'M=M+1\n'
+                        ]
             case vmcommandtype.C_POP:
-                pass
+                match segment:
+                    case 'constant':
+                        pass
+                    case 'local' | 'argument' | 'this' | 'that':
+                        symbol = self._symbols[segment]
+                        lines = [
+                            '@' + symbol + '\n',
+                            'D=M\n',
+                            '@' + str(index) + '\n',
+                            'D=D+A\n',
+                            '@R13\n',
+                            'M=D\n',
+                            '@SP\n',
+                            'AM=M-1\n',
+                            'D=M\n',
+                            '@R13\n',
+                            'A=M\n',
+                            'M=D\n'
+                        ]
+                    case 'pointer' | 'temp':
+                        addr = str(self._mapping[segment] + index)
+                        lines = [
+                            '@SP\n',
+                            'AM=M-1\n',
+                            'D=M\n',
+                            '@' + addr + '\n',
+                            'M=D\n'
+                        ]
+                    case 'static':
+                        lines = [
+                            '@SP\n',
+                            'AM=M-1\n',
+                            'D=M\n',
+                            '@' + self.finame + '.' + str(index) + '\n',
+                            'M=D\n'
+                        ]
         self.f.writelines(lines)
 
     # def close(self):

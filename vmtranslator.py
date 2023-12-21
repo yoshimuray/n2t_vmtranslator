@@ -17,6 +17,7 @@ else:
 with fopath.open(mode='w') as fo:
     writer = CodeWriter(fo)
     for fip in vmlist:
+        writer.setFileName(str(fip.stem))
         with fip.open() as fi:
             parser = VMParser(fi)
             while parser.hasMoreCommands():
