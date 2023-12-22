@@ -18,6 +18,12 @@ class CodeWriter:
         self.f = f
         self.labelcnt = 0
 
+    def writeInit(self) -> None:
+        lines = [
+
+        ]
+        self.f.writelines(lines)
+
     def setFileName(self, fileName: str) -> None:
         self.finame = fileName
 
@@ -62,14 +68,14 @@ class CodeWriter:
                     '@SP\n'
                     'AM=M-1\n',
                     'D=M-D\n',
-                    '@_AUTO' + str(self.labelcnt) + '\n',
+                    '@_ARITH' + str(self.labelcnt) + '\n',
                     'D;JEQ\n',
                     'D=0\n',
-                    '@_AUTO' + str(self.labelcnt + 1) + '\n',
+                    '@_ARITH' + str(self.labelcnt + 1) + '\n',
                     '0;JMP\n',
-                    '(_AUTO' + str(self.labelcnt) + ')\n',
+                    '(_ARITH' + str(self.labelcnt) + ')\n',
                     'D=-1\n',
-                    '(_AUTO' + str(self.labelcnt + 1) + ')\n',
+                    '(_ARITH' + str(self.labelcnt + 1) + ')\n',
                     '@SP\n',
                     'A=M\n',
                     'M=D\n',
@@ -85,14 +91,14 @@ class CodeWriter:
                     '@SP\n'
                     'AM=M-1\n',
                     'D=M-D\n',
-                    '@_AUTO' + str(self.labelcnt) + '\n',
+                    '@_ARITH' + str(self.labelcnt) + '\n',
                     'D;JGT\n',
                     'D=0\n',
-                    '@_AUTO' + str(self.labelcnt + 1) + '\n',
+                    '@_ARITH' + str(self.labelcnt + 1) + '\n',
                     '0;JMP\n',
-                    '(_AUTO' + str(self.labelcnt) + ')\n',
+                    '(_ARITH' + str(self.labelcnt) + ')\n',
                     'D=-1\n',
-                    '(_AUTO' + str(self.labelcnt + 1) + ')\n',
+                    '(_ARITH' + str(self.labelcnt + 1) + ')\n',
                     '@SP\n',
                     'A=M\n',
                     'M=D\n',
@@ -108,14 +114,14 @@ class CodeWriter:
                     '@SP\n'
                     'AM=M-1\n',
                     'D=M-D\n',
-                    '@_AUTO' + str(self.labelcnt) + '\n',
+                    '@_ARITH' + str(self.labelcnt) + '\n',
                     'D;JLT\n',
                     'D=0\n',
-                    '@_AUTO' + str(self.labelcnt + 1) + '\n',
+                    '@_ARITH' + str(self.labelcnt + 1) + '\n',
                     '0;JMP\n',
-                    '(_AUTO' + str(self.labelcnt) + ')\n',
+                    '(_ARITH' + str(self.labelcnt) + ')\n',
                     'D=-1\n',
-                    '(_AUTO' + str(self.labelcnt + 1) + ')\n',
+                    '(_ARITH' + str(self.labelcnt + 1) + ')\n',
                     '@SP\n',
                     'A=M\n',
                     'M=D\n',
@@ -243,6 +249,38 @@ class CodeWriter:
                             'M=D\n'
                         ]
         self.f.writelines(lines)
+
+    def writeLabel(self, label: str) -> None:
+        lines = [
+            '(' + label + ')\n'
+        ]
+        self.f.writelines(lines)
+    
+    def writeGoto(self, label: str) -> None:
+        lines = [
+            '@' + label + '\n',
+            '0;JMP\n'
+        ]
+        self.f.writelines(lines)
+
+    def writeIf(self, label: str) -> None:
+        lines = [
+            '@SP\n',
+            'AM=M-1\n',
+            'D=M\n',
+            '@' + label + '\n',
+            'D;JNE\n'
+        ]
+        self.f.writelines(lines)
+
+    def writeCall(self, functionName: str, numArgs: int) -> None:
+        pass
+    
+    def writeReturn(self) -> None:
+        pass
+    
+    def writeFunction(self, functionName: str, numLocals: int) -> None:
+        pass
 
     # def close(self):
     #     pass

@@ -27,11 +27,11 @@ with fopath.open(mode='w') as fo:
                     case vmcommandtype.C_PUSH | vmcommandtype.C_POP:
                         writer.writePushPop(parser.commandType(), parser.arg1(), parser.arg2())
                     case vmcommandtype.C_LABEL:
-                        pass
+                        writer.writeLabel(parser.arg1())
                     case vmcommandtype.C_GOTO:
-                        pass
+                        writer.writeGoto(parser.arg1())
                     case vmcommandtype.C_IF:
-                        pass
+                        writer.writeIf(parser.arg1())
                     case vmcommandtype.C_FUNCTION:
                         pass
                     case vmcommandtype.C_RETURN:
