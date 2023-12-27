@@ -17,12 +17,18 @@ class CodeWriter:
     def __init__(self, f: io.TextIOWrapper) -> None:
         self.f = f
         self.labelcnt = 0
+        self.callcnt = 0
 
     def writeInit(self) -> None:
         lines = [
-
+            '@256\n',
+            'D=A\n',
+            '@SP\n',
+            'M=D\n',
         ]
         self.f.writelines(lines)
+        self.writeCall('Sys.init', 0)
+
 
     def setFileName(self, fileName: str) -> None:
         self.finame = fileName
@@ -252,13 +258,13 @@ class CodeWriter:
 
     def writeLabel(self, label: str) -> None:
         lines = [
-            '(' + label + ')\n'
+            '(' + self.funcname + '$' +  label + ')\n'
         ]
         self.f.writelines(lines)
     
     def writeGoto(self, label: str) -> None:
         lines = [
-            '@' + label + '\n',
+            '@' + self.funcname + '$' + label + '\n',
             '0;JMP\n'
         ]
         self.f.writelines(lines)
@@ -268,19 +274,119 @@ class CodeWriter:
             '@SP\n',
             'AM=M-1\n',
             'D=M\n',
-            '@' + label + '\n',
+            '@' + self.funcname + '$' + label + '\n',
             'D;JNE\n'
         ]
         self.f.writelines(lines)
 
     def writeCall(self, functionName: str, numArgs: int) -> None:
-        pass
-    
+        lines = [
+            '@_CALL' + str(self.callcnt) + '\n',    # push return-address
+            'D=A\n',
+            '@SP\n',
+            'A=M\n',
+            'M=D\n',
+            '@LCL\n',                           # push LCL
+            'D=M\n', 
+            '@SP\n',
+            'AM=M+1\n',
+            'M=D\n',
+            '@ARG\n',                           # push ARG
+            'D=M\n', 
+            '@SP\n',
+            'AM=M+1\n',
+            'M=D\n',
+            '@THIS\n',                          # push THIS
+            'D=M\n', 
+            '@SP\n',
+            'AM=M+1\n',
+            'M=D\n',
+            '@THAT\n',                          # push THAT
+            'D=M\n', 
+            '@SP\n',
+            'AM=M+1\n',
+            'M=D\n',
+            '@SP\n',
+            'MD=M+1\n',
+            '@LCL\n',
+            'M=D\n',
+            '@' + str(numArgs + 5) + '\n',
+            'D=D-A\n',
+            '@ARG\n',
+            'M=D\n',
+            '@' + functionName + '\n',          # goto f
+            '0;JMP\n',
+            '(_CALL' + str(self.callcnt) + ')\n'    # (return-address)
+        ]
+        self.f.writelines(lines)
+        self.callcnt += 1
+
     def writeReturn(self) -> None:
-        pass
+        lines = [
+            '@LCL\n',       # FRAME = LCL
+            'D=M\n',
+            '@R13\n',
+            'M=D\n',
+            '@5\n',         # RET = *(FRAME - 5)
+            'A=D-A\n',
+            'D=M\n',
+            '@R14\n',
+            'M=D\n',
+            '@SP\n',        # *ARG = pop()
+            'AM=M-1\n',
+            'D=M\n',
+            '@ARG\n',
+            'A=M\n',
+            'M=D\n',
+            '@ARG\n',       # SP = ARG + 1
+            'D=M+1\n',
+            '@SP\n',
+            'M=D\n',
+            '@R13\n',       # THAT = *(FRAME - 1)
+            'AM=M-1\n',
+            'D=M\n',
+            '@THAT\n',
+            'M=D\n',
+            '@R13\n',       # THIS = *(FRAME - 2)
+            'AM=M-1\n',
+            'D=M\n',
+            '@THIS\n',
+            'M=D\n',
+            '@R13\n',       # ARG = *(FRAME - 3)
+            'AM=M-1\n',
+            'D=M\n',
+            '@ARG\n',
+            'M=D\n',
+            '@R13\n',       # LCL = *(FRAME - 4)
+            'AM=M-1\n',
+            'D=M\n',
+            '@LCL\n',
+            'M=D\n',
+            '@R14\n',
+            'A=M\n',
+            '0;JMP\n'
+        ]
+        self.f.writelines(lines)
     
     def writeFunction(self, functionName: str, numLocals: int) -> None:
-        pass
+        lines = [
+            '(' + functionName + ')\n',
+        ]
+        if numLocals:
+            lines += [
+                '@SP\n'
+                'A=M\n'
+                'M=0\n'
+            ] + [
+                '@SP\n'
+                'AM=M+1\n'
+                'M=0\n'
+            ] * (numLocals - 1) + [
+                '@SP\n',
+                'M=M+1\n'
+            ]
+        self.funcname = functionName
+        self.f.writelines(lines)
 
     # def close(self):
     #     pass

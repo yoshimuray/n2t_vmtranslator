@@ -16,7 +16,9 @@ else:
 
 with fopath.open(mode='w') as fo:
     writer = CodeWriter(fo)
+    writer.writeInit()
     for fip in vmlist:
+        # print(str(fip.stem))
         writer.setFileName(str(fip.stem))
         with fip.open() as fi:
             parser = VMParser(fi)
@@ -33,10 +35,10 @@ with fopath.open(mode='w') as fo:
                     case vmcommandtype.C_IF:
                         writer.writeIf(parser.arg1())
                     case vmcommandtype.C_FUNCTION:
-                        pass
+                        writer.writeFunction(parser.arg1(), parser.arg2())
                     case vmcommandtype.C_RETURN:
-                        pass
+                        writer.writeReturn()
                     case vmcommandtype.C_CALL:
-                        pass
+                        writer.writeCall(parser.arg1(), parser.arg2())
                 parser.advance()
 
